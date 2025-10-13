@@ -1,0 +1,124 @@
+/* Wrapper */
+.form-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #6a11cb, #2575fc);
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Form container */
+.form-container {
+  background: #fff;
+  padding: 50px 35px;
+  border-radius: 25px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  width: 100%;
+  max-width: 400px;
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.form-container:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.35);
+}
+
+.form-container h2 {
+  text-align: center;
+  margin-bottom: 35px;
+  color: #333;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+/* Floating label inputs */
+.form-group {
+  position: relative;
+  margin-bottom: 25px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 14px 45px 14px 15px; /* space for icon */
+  border-radius: 12px;
+  border: 2px solid #ddd;
+  font-size: 16px;
+  background: #f7f8ff;
+  transition: 0.3s;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #2575fc;
+  box-shadow: 0 0 8px rgba(37, 117, 252, 0.5);
+  background: #fff;
+}
+
+.form-group label {
+  position: absolute;
+  top: 50%;
+  left: 15px;
+  transform: translateY(-50%);
+  color: #888;
+  font-weight: 500;
+  pointer-events: none;
+  transition: 0.3s ease all;
+  background-color: #f7f8ff;
+  padding: 0 5px;
+}
+
+.form-group input:focus + label,
+.form-group input:not(:placeholder-shown) + label {
+  top: -12px;
+  left: 12px;
+  color: #2575fc;
+  font-size: 13px;
+  font-weight: 600;
+  background-color: #fff;
+}
+
+/* Input icons */
+.input-icon {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #888;
+  font-size: 18px;
+  pointer-events: none;
+}
+
+/* Submit button */
+.submit-btn {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #2575fc, #6a11cb);
+  border: none;
+  color: #fff;
+  font-size: 18px;
+  font-weight: bold;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: 0.3s ease;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+}
+
+.submit-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.35);
+  background: linear-gradient(135deg, #6a11cb, #2575fc);
+}
+
+/* Responsive */
+@media (max-width: 500px) {
+  .form-container {
+    padding: 40px 25px;
+  }
+
+  .submit-btn {
+    font-size: 16px;
+    padding: 14px;
+  }
+}
