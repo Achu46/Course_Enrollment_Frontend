@@ -31,8 +31,6 @@ const CourseHome = () => {
     { id: "C202", name: "Computer Science", status: "active" },
   ];
 
-  
-
   const handleEnrollClick = (course) => {
     setSelectedCourse(course);
     setShowModal(true);

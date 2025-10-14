@@ -10,6 +10,7 @@ const AdminLoginForm = () => {
 
   return (
     <div className="form-wrapper">
+      <title>Admin Dashboard</title>
       <div className="form-container">
         <h2>Admin Login</h2>
         <form onSubmit={handleSubmit}>

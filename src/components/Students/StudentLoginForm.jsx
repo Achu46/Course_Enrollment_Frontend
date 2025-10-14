@@ -5,7 +5,6 @@ import "./StudentLoginForm.css";
 const StudentLoginForm = () => {
   const handleGoogleLogin = () => {
     alert("Google Login Coming Soon!");
-    // Later you can integrate Google Auth here
   };
 
   return (

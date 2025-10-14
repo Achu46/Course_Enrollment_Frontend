@@ -93,6 +93,7 @@ const AdminDashboard = () => {
 
   return (
     <div className="admin-dashboard-wrapper">
+      <title>Admin Dashboard</title>
       <nav className="navbar">
         <h2 className="logo">
           <FaBookOpen /> Admin Portal
