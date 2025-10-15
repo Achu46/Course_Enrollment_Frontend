@@ -10,6 +10,7 @@ import {
 import "./StudentForm.css";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const StudentForm = () => {
   const [form, setForm] = useState({
@@ -23,6 +24,7 @@ const StudentForm = () => {
 
   const [error, setError] = useState({});
 
+  const navigate = useNavigate();
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
@@ -72,16 +74,13 @@ const StudentForm = () => {
       );
 
       if (response.status === 200) {
-        setForm({
-          name: "",
-          email: "",
-          password: "",
-          mobileNumber: "",
-          gender: "",
-          studentId: "",
-        });
-
         toast.success("🍾 Account created successfully!");
+        setTimeout(() => {
+          navigate("/student-login");
+          setTimeout(() => {
+            window.location.reload(); // reload AFTER navigating
+          }, 500);
+        }, 2000);
       } else {
         toast.error("❌ Account creation failed. Please try again.");
       }
