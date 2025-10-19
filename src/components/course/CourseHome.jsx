@@ -1,35 +1,38 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaBookOpen, FaCheckCircle, FaSignOutAlt } from "react-icons/fa";
 import "./CourseHome.css";
+import axios from "axios";
 
 const CourseHome = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [status, setStatus] = useState("active");
   const [grade, setGrade] = useState("");
+  const [courses, setCourses] = useState([]);
+  const [form, setForm] = useState({
+    title: "",
+    courseCode: "",
+    duration: "",
+  });
 
-  const courses = [
-    {
-      id: "C101",
-      name: "Mathematics 101",
-      desc: "Introduction to Algebra and Calculus.",
-    },
-    {
-      id: "C102",
-      name: "Physics 101",
-      desc: "Fundamentals of Mechanics and Energy.",
-    },
-    {
-      id: "C103",
-      name: "Chemistry 101",
-      desc: "Basic Principles of Chemistry and Reactions.",
-    },
-  ];
+  // Fetch the Courses from DB
+  const fetchCourse = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:5000/api/fetch-courses",
+        form
+      );
+      if (response.status === 200) {
+        setCourses(response.data);
+      }
+    } catch (err) {
+      console.error("❌ Error in fetching courses:", err.message);
+    }
+  };
 
-  const enrolledCourses = [
-    { id: "C201", name: "English Literature", status: "active" },
-    { id: "C202", name: "Computer Science", status: "active" },
-  ];
+  useEffect(() => {
+    fetchCourse();
+  }, []);
 
   const handleEnrollClick = (course) => {
     setSelectedCourse(course);
@@ -75,9 +78,10 @@ const CourseHome = () => {
           </h2>
           <div className="course-grid">
             {courses.map((course) => (
-              <div className="course-card" key={course.id}>
-                <h3>{course.name}</h3>
-                <p>{course.desc}</p>
+              <div className="course-card" key={course.courseCode}>
+                <h3>{course.title}</h3>
+                  <p>Course Code: <strong>{course.courseCode}</strong></p> 
+                <p>Duration: <strong>{course.duration}</strong></p>
                 <button
                   className="enroll-btn"
                   onClick={() => handleEnrollClick(course)}
@@ -93,7 +97,7 @@ const CourseHome = () => {
           <h2>
             <FaCheckCircle /> Enrolled Courses
           </h2>
-          <div className="course-grid">
+          {/* <div className="course-grid">
             {enrolledCourses.map((course) => (
               <div className="course-card enrolled" key={course.id}>
                 <h3>{course.name}</h3>
@@ -102,7 +106,7 @@ const CourseHome = () => {
                 </p>
               </div>
             ))}
-          </div>
+          </div> */}
         </div>
       </div>
 

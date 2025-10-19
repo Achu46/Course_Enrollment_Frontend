@@ -158,6 +158,9 @@ const AdminDashboard = () => {
           {courses.map((course) => (
             <div className="course-card" key={course._id}>
               <h3>{course.title}</h3>
+              <p>
+                Course Code: <strong>{course.courseCode}</strong>
+              </p>
               <p>{course.description}</p>
               <div className="card-actions">
                 <button className="edit-btn" onClick={() => openModal(course)}>
