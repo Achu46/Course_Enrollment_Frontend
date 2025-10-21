@@ -2,25 +2,71 @@ import React, { useEffect, useState } from "react";
 import { FaBookOpen, FaCheckCircle, FaSignOutAlt } from "react-icons/fa";
 import "./CourseHome.css";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const CourseHome = () => {
   const [showModal, setShowModal] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState(null);
-  const [status, setStatus] = useState("active");
-  const [grade, setGrade] = useState("");
   const [courses, setCourses] = useState([]);
   const [form, setForm] = useState({
     title: "",
     courseCode: "",
     duration: "",
+    enrollmentDate: "",
+    status: "",
+    grade: "",
   });
+  const [isEnrolled, setIsEnrolled] = useState(false);
+
+  const handleChange = (e) => {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const validation = () => {
+    if (!form.enrollmentDate.trim()) return false;
+    if (!form.status.trim()) return false;
+    if (!form.grade.trim()) return false;
+    return true;
+  };
+
+  const handleEnrollment = async (e) => {
+    e.preventDefault();
+
+    const isValid = validation();
+    if (!isValid) {
+      toast.error("⚠️ Please fill all required fields.");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/course-enroll",
+        form,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        toast.success("✅ Course Enrolled Successfully");
+        setIsEnrolled(true);
+        setShowModal(false);
+      } else {
+        toast.error("❌ Course has not been enrolled");
+      }
+    } catch (err) {
+      console.error("⚠️ Error:", err.message);
+      toast.info("⚠️ Internal server error");
+    }
+  };
 
   // Fetch the Courses from DB
   const fetchCourse = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:5000/api/fetch-courses",
-        form
+        "http://localhost:5000/api/fetch-courses"
       );
       if (response.status === 200) {
         setCourses(response.data);
@@ -36,18 +82,20 @@ const CourseHome = () => {
 
   const handleEnrollClick = (course) => {
     setSelectedCourse(course);
+    setForm({
+      title: course.title,
+      courseCode: course.courseCode,
+      duration: course.duration,
+      enrollmentDate: new Date().toISOString().split("T")[0],
+      status: "active",
+      grade: "N/A",
+    });
     setShowModal(true);
   };
 
   const closeModal = () => {
     setShowModal(false);
     setSelectedCourse(null);
-  };
-
-  const handleEnrollSubmit = (e) => {
-    e.preventDefault();
-    alert(`Enrolled in ${selectedCourse.name} successfully!`);
-    closeModal();
   };
 
   return (
@@ -80,8 +128,12 @@ const CourseHome = () => {
             {courses.map((course) => (
               <div className="course-card" key={course.courseCode}>
                 <h3>{course.title}</h3>
-                  <p>Course Code: <strong>{course.courseCode}</strong></p> 
-                <p>Duration: <strong>{course.duration}</strong></p>
+                <p>
+                  Course Code: <strong>{course.courseCode}</strong>
+                </p>
+                <p>
+                  Duration: <strong>{course.duration}</strong>
+                </p>
                 <button
                   className="enroll-btn"
                   onClick={() => handleEnrollClick(course)}
@@ -97,16 +149,6 @@ const CourseHome = () => {
           <h2>
             <FaCheckCircle /> Enrolled Courses
           </h2>
-          {/* <div className="course-grid">
-            {enrolledCourses.map((course) => (
-              <div className="course-card enrolled" key={course.id}>
-                <h3>{course.name}</h3>
-                <p>
-                  Status: <strong>{course.status}</strong>
-                </p>
-              </div>
-            ))}
-          </div> */}
         </div>
       </div>
 
@@ -114,29 +156,24 @@ const CourseHome = () => {
       {showModal && selectedCourse && (
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3>Enroll in {selectedCourse.name}</h3>
-            <form onSubmit={handleEnrollSubmit}>
-              <div className="form-group">
-                <label>Student ID</label>
-                <input type="text" value="STU12345" readOnly />
-              </div>
-              <div className="form-group">
-                <label>Course ID</label>
-                <input type="text" value={selectedCourse.id} readOnly />
-              </div>
+            <h3>Enroll in {selectedCourse.title}</h3>
+            <form onSubmit={handleEnrollment}>
               <div className="form-group">
                 <label>Enrollment Date</label>
                 <input
                   type="text"
-                  value={new Date().toLocaleDateString()}
+                  name="enrollmentDate"
+                  value={form.enrollmentDate}
                   readOnly
                 />
               </div>
+
               <div className="form-group">
                 <label>Status</label>
                 <select
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
+                  name="status"
+                  value={form.status}
+                  onChange={handleChange}
                   required
                 >
                   <option value="active">Active</option>
@@ -144,15 +181,18 @@ const CourseHome = () => {
                   <option value="dropped">Dropped</option>
                 </select>
               </div>
+
               <div className="form-group">
                 <label>Grade</label>
                 <input
                   type="text"
+                  name="grade"
                   placeholder="N/A"
-                  value={grade}
-                  onChange={(e) => setGrade(e.target.value)}
+                  value={form.grade}
+                  onChange={handleChange}
                 />
               </div>
+
               <button type="submit" className="submit-btn">
                 Confirm Enrollment
               </button>
