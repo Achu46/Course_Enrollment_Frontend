@@ -16,24 +16,55 @@ const CourseHome = () => {
     status: "",
     grade: "",
   });
-  const [isEnrolled, setIsEnrolled] = useState(false);
+  const [studentId, setStudentId] = useState("");
+
+  const name = localStorage.getItem("studentName");
+  const email = localStorage.getItem("studentEmail");
+
+  useEffect(() => {
+    if (!email) return;
+
+    const fetchStudentID = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:5000/api/student-id/${email}`
+        );
+        setStudentId(response.data.studentId);
+      } catch (err) {
+        console.error("Error fetching student ID:", err.message);
+      }
+    };
+
+    fetchStudentID();
+  }, [email]);
+
+  // Fetch available courses
+  useEffect(() => {
+    const fetchCourses = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:5000/api/fetch-courses"
+        );
+        if (response.status === 200) setCourses(response.data);
+      } catch (err) {
+        console.error("Error fetching courses:", err.message);
+      }
+    };
+    fetchCourses();
+  }, []);
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const validation = () => {
-    if (!form.enrollmentDate.trim()) return false;
-    if (!form.status.trim()) return false;
-    if (!form.grade.trim()) return false;
-    return true;
+    return form.enrollmentDate && form.status && form.grade;
   };
 
   const handleEnrollment = async (e) => {
     e.preventDefault();
 
-    const isValid = validation();
-    if (!isValid) {
+    if (!validation()) {
       toast.error("⚠️ Please fill all required fields.");
       return;
     }
@@ -43,42 +74,21 @@ const CourseHome = () => {
         "http://localhost:5000/api/course-enroll",
         form,
         {
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
         }
       );
 
       if (response.status === 200) {
         toast.success("✅ Course Enrolled Successfully");
-        setIsEnrolled(true);
         setShowModal(false);
       } else {
-        toast.error("❌ Course has not been enrolled");
+        toast.error("❌ Course enrollment failed");
       }
     } catch (err) {
-      console.error("⚠️ Error:", err.message);
+      console.error("Error enrolling course:", err.message);
       toast.info("⚠️ Internal server error");
     }
   };
-
-  // Fetch the Courses from DB
-  const fetchCourse = async () => {
-    try {
-      const response = await axios.get(
-        "http://localhost:5000/api/fetch-courses"
-      );
-      if (response.status === 200) {
-        setCourses(response.data);
-      }
-    } catch (err) {
-      console.error("❌ Error in fetching courses:", err.message);
-    }
-  };
-
-  useEffect(() => {
-    fetchCourse();
-  }, []);
 
   const handleEnrollClick = (course) => {
     setSelectedCourse(course);
@@ -112,12 +122,18 @@ const CourseHome = () => {
 
       <div className="course-home-container">
         <div className="welcome-card">
-          <h3>
-            Welcome, <span>John Doe</span>
-          </h3>
-          <p>
-            Student ID: <strong>STU12345</strong>
-          </p>
+          {name && studentId ? (
+            <>
+              <h3>
+                Welcome, <span>{name}</span>
+              </h3>
+              <p>
+                Student ID: <strong>{studentId}</strong>
+              </p>
+            </>
+          ) : (
+            <p>Loading student info...</p>
+          )}
         </div>
 
         <div className="section">
@@ -187,7 +203,6 @@ const CourseHome = () => {
                 <input
                   type="text"
                   name="grade"
-                  placeholder="N/A"
                   value={form.grade}
                   onChange={handleChange}
                 />

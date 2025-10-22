@@ -49,10 +49,11 @@ const StudentLoginForm = () => {
       if (response.status === 200) {
         console.log("🍾 Logged in successfully");
         toast.success("🥂 Welcome back");
-        setTimeout(() => {
-          window.location.reload();
-          navigate("/")
-        },2000);
+        // setTimeout(() => {
+        //   window.location.reload();
+        //   navigate("/")
+        // },2000);
+        navigate("/")
       } else {
         console.error("❌ Invalid credentials");
       }

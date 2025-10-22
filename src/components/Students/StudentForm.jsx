@@ -4,7 +4,6 @@ import {
   FaEnvelope,
   FaLock,
   FaPhone,
-  FaIdBadge,
   FaVenusMars,
 } from "react-icons/fa";
 import "./StudentForm.css";
@@ -13,13 +12,19 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
 const StudentForm = () => {
+  const random_studentId = [...Array(8)]
+    .map(
+      () =>
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[Math.floor(Math.random() * 36)]
+    )
+    .join("");
   const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
     mobileNumber: "",
     gender: "",
-    studentId: "",
+    studentId: random_studentId,
   });
 
   const [error, setError] = useState({});
@@ -75,6 +80,9 @@ const StudentForm = () => {
 
       if (response.status === 200) {
         toast.success("🍾 Account created successfully!");
+        const studentData = response.data;
+        localStorage.setItem("studentName", studentData.name);
+        localStorage.setItem("studentEmail", studentData.email);
         setTimeout(() => {
           navigate("/student-login");
           setTimeout(() => {
@@ -186,7 +194,7 @@ const StudentForm = () => {
           </div>
 
           {/* Student ID */}
-          <div className="form-group">
+          {/* <div className="form-group">
             <input
               type="text"
               id="studentId"
@@ -202,7 +210,7 @@ const StudentForm = () => {
             {error.studentId && (
               <p style={{ color: "red" }}>{error.studentId}</p>
             )}
-          </div>
+          </div> */}
 
           <button type="submit" className="submit-btn">
             Register
