@@ -48,6 +48,9 @@ const StudentLoginForm = () => {
 
       if (response.status === 200) {
         console.log("🍾 Logged in successfully");
+        localStorage.setItem("studentId", response.data.studentId);
+        localStorage.setItem("studentName", response.data.name);
+        localStorage.setItem("studentEmail", response.data.email);
         toast.success("🥂 Welcome back");
         // setTimeout(() => {
         //   window.location.reload();

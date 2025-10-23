@@ -16,27 +16,44 @@ const CourseHome = () => {
     status: "",
     grade: "",
   });
-  const [studentId, setStudentId] = useState("");
-
-  const name = localStorage.getItem("studentName");
-  const email = localStorage.getItem("studentEmail");
+  const [enrolledCourses, setEnrolledCourses] = useState([]);
+  const [student, setStudent] = useState({ name: "", studentId: "" });
 
   useEffect(() => {
-    if (!email) return;
+    const name = localStorage.getItem("studentName");
+    const studentId = localStorage.getItem("studentId");
 
-    const fetchStudentID = async () => {
-      try {
-        const response = await axios.get(
-          `http://localhost:5000/api/student-id/${email}`
-        );
-        setStudentId(response.data.studentId);
-      } catch (err) {
-        console.error("Error fetching student ID:", err.message);
-      }
-    };
+    if (name && studentId) {
+      setStudent({ name, studentId });
+    } else {
+      // Redirect to login if not logged in
+      window.location.href = "/login";
+    }
+  }, []);
 
-    fetchStudentID();
-  }, [email]);
+  // useEffect(() => {
+  //   const email = localStorage.getItem("studentEmail");
+  //   const name = localStorage.getItem("studentName");
+  //   if (!email) return;
+
+  //   const fetchStudent = async () => {
+  //     try {
+  //       const response = await axios.get(
+  //         `http://localhost:5000/api/student-id/${email}`
+  //       );
+
+  //       // Assuming backend returns { studentId: "...", name: "..." } or you can use localStorage name
+  //       setStudent({
+  //         name: name || response.data.name, // fallback to name from backend if needed
+  //         studentId: response.data.studentId,
+  //       });
+  //     } catch (err) {
+  //       console.error("Error fetching student ID:", err.message);
+  //     }
+  //   };
+
+  //   fetchStudent();
+  // }, []);
 
   // Fetch available courses
   useEffect(() => {
@@ -54,11 +71,21 @@ const CourseHome = () => {
   }, []);
 
   const handleChange = (e) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const validation = () => {
-    return form.enrollmentDate && form.status && form.grade;
+    return (
+      form.student_id &&
+      form.course_id &&
+      form.enrollmentDate &&
+      form.status &&
+      form.grade
+    );
   };
 
   const handleEnrollment = async (e) => {
@@ -70,6 +97,7 @@ const CourseHome = () => {
     }
 
     try {
+      // Send the whole form as JSON
       const response = await axios.post(
         "http://localhost:5000/api/course-enroll",
         form,
@@ -91,8 +119,15 @@ const CourseHome = () => {
   };
 
   const handleEnrollClick = (course) => {
+    if (!student.studentId) {
+      toast.info("⚠️ Student info loading...");
+      return;
+    }
+
     setSelectedCourse(course);
     setForm({
+      student_id: student.studentId, // ✅ use student object
+      course_id: course._id,
       title: course.title,
       courseCode: course.courseCode,
       duration: course.duration,
@@ -102,6 +137,26 @@ const CourseHome = () => {
     });
     setShowModal(true);
   };
+
+  useEffect(() => {
+    const fetchEnrolledCourses = async () => {
+      try {
+        if (!student.studentId) return;
+
+        const response = await axios.get(
+          `http://localhost:5000/api/enrolled-course/${student.studentId}` // ✅ studentId param
+        );
+
+        if (response.status === 200) {
+          setEnrolledCourses(response.data); // ✅ set the enrolled courses state
+        }
+      } catch (err) {
+        console.log("❌ Failed to fetch enrolled courses", err.message);
+      }
+    };
+
+    fetchEnrolledCourses();
+  }, [student.studentId]);
 
   const closeModal = () => {
     setShowModal(false);
@@ -121,14 +176,29 @@ const CourseHome = () => {
       </nav>
 
       <div className="course-home-container">
-        <div className="welcome-card">
-          {name && studentId ? (
+        {/* <div className="welcome-card">
+          {student.studentId ? (
             <>
               <h3>
-                Welcome, <span>{name}</span>
+                Welcome, <span>{student.name}</span>
               </h3>
               <p>
-                Student ID: <strong>{studentId}</strong>
+                Student ID: <strong>{student.studentId}</strong>
+              </p>
+            </>
+          ) : (
+            <p>Loading student info...</p>
+          )}
+        </div> */}
+
+        <div className="welcome-card">
+          {student.studentId ? (
+            <>
+              <h3>
+                Welcome, <span>{student.name}</span>
+              </h3>
+              <p>
+                Student ID: <strong>{student.studentId}</strong>
               </p>
             </>
           ) : (
@@ -165,6 +235,35 @@ const CourseHome = () => {
           <h2>
             <FaCheckCircle /> Enrolled Courses
           </h2>
+          <div className="course-grid">
+            {enrolledCourses.length > 0 ? (
+              enrolledCourses.map((enroll) => (
+                <div className="course-card" key={enroll._id}>
+                  <h3>{enroll.course_id?.title || enroll.title}</h3>
+                  <p>
+                    Course Code:{" "}
+                    <strong>
+                      {enroll.course_id?.courseCode || enroll.courseCode}
+                    </strong>
+                  </p>
+                  <p>
+                    Duration:{" "}
+                    <strong>
+                      {enroll.course_id?.duration || enroll.duration}
+                    </strong>
+                  </p>
+                  <p>
+                    Status: <strong>{enroll.status}</strong>
+                  </p>
+                  <p>
+                    Grade: <strong>{enroll.grade}</strong>
+                  </p>
+                </div>
+              ))
+            ) : (
+              <p style={{color:"white"}}>No enrolled courses yet.</p>
+            )}
+          </div>
         </div>
       </div>
 
@@ -177,10 +276,10 @@ const CourseHome = () => {
               <div className="form-group">
                 <label>Enrollment Date</label>
                 <input
-                  type="text"
+                  type="date"
                   name="enrollmentDate"
                   value={form.enrollmentDate}
-                  readOnly
+                  onChange={handleChange}
                 />
               </div>
 
