@@ -261,7 +261,7 @@ const CourseHome = () => {
                 </div>
               ))
             ) : (
-              <p style={{color:"white"}}>No enrolled courses yet.</p>
+              <p style={{color:"white"}}><strong>No enrolled courses yet.</strong></p>
             )}
           </div>
         </div>
