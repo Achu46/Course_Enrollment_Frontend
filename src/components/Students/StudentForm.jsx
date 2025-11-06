@@ -9,7 +9,7 @@ import {
 import "./StudentForm.css";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const StudentForm = () => {
   const random_studentId = [...Array(8)]
@@ -211,6 +211,10 @@ const StudentForm = () => {
               <p style={{ color: "red" }}>{error.studentId}</p>
             )}
           </div> */}
+
+          <p className="already-account">
+            Already had an Account?<Link to="/student-login" style={{color:"blue"}}>Login</Link>
+          </p>
 
           <button type="submit" className="submit-btn">
             Register

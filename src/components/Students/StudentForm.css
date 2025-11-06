@@ -137,3 +137,9 @@
     padding: 14px;
   }
 }
+
+.already-account{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

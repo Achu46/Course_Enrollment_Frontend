@@ -3,10 +3,12 @@ import { FaEnvelope, FaLock, FaGoogle } from "react-icons/fa";
 import "./StudentLoginForm.css";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
+import { GoogleLogin } from "@react-oauth/google";
+import { jwtDecode } from "jwt-decode";
 
 const StudentLoginForm = () => {
-  const navigate=useNavigate();
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -40,34 +42,62 @@ const StudentLoginForm = () => {
         "http://localhost:5000/api/student-login",
         form,
         {
-          header: {
+          headers: {
             "Content-Type": "application/json",
           },
         }
       );
 
       if (response.status === 200) {
-        console.log("🍾 Logged in successfully");
         localStorage.setItem("studentId", response.data.studentId);
         localStorage.setItem("studentName", response.data.name);
         localStorage.setItem("studentEmail", response.data.email);
+
         toast.success("🥂 Welcome back");
-        // setTimeout(() => {
-        //   window.location.reload();
-        //   navigate("/")
-        // },2000);
-        navigate("/")
+        navigate("/");
       } else {
         console.error("❌ Invalid credentials");
       }
     } catch (err) {
       console.error("Error:", err.message);
-      toast.info("⚠️ Something went wrong server side issue");
+      toast.info("⚠️ Something went wrong (server error)");
     }
   };
 
-  const handleGoogleLogin = () => {
-    alert("Google Login Coming Soon!");
+  // ✅ GOOGLE LOGIN FUNCTION
+  const handleGoogleSuccess = async (credentialResponse) => {
+    console.log("GOOGLE CLIENT ID =", process.env.REACT_APP_GOOGLE_CLIENT_ID);
+
+    try {
+      const decoded = jwtDecode(credentialResponse.credential);
+
+      const googleUser = {
+        name: decoded.name,
+        email: decoded.email,
+        googleId: decoded.sub,
+      };
+
+      const response = await axios.post(
+        "http://localhost:5000/api/google-login",
+        googleUser
+      );
+
+      if (response.status === 200) {
+        localStorage.setItem("studentId", response.data.user.studentId);
+        localStorage.setItem("studentName", response.data.user.name);
+        localStorage.setItem("studentEmail", response.data.user.email);
+
+        toast.success("✅ Logged in with Google");
+        navigate("/");
+      }
+    } catch (err) {
+      console.error("Google Login Error:", err);
+      toast.error("❌ Google Login Failed");
+    }
+  };
+
+  const handleGoogleError = () => {
+    toast.error("❌ Google Login failed");
   };
 
   return (
@@ -77,6 +107,7 @@ const StudentLoginForm = () => {
         <h2>Student Login</h2>
 
         <form onSubmit={handleSubmit}>
+          {/* Email */}
           <div className="form-group">
             <input
               type="email"
@@ -94,6 +125,7 @@ const StudentLoginForm = () => {
           </div>
           {error.email && <p style={{ color: "red" }}>{error.email}</p>}
 
+          {/* Password */}
           <div className="form-group">
             <input
               type="password"
@@ -111,6 +143,13 @@ const StudentLoginForm = () => {
           </div>
           {error.password && <p style={{ color: "red" }}>{error.password}</p>}
 
+          <p className="already-account">
+            Create an Account?
+            <Link to="/student-register" style={{ color: "blue" }}>
+              Register
+            </Link>
+          </p>
+
           <button type="submit" className="submit-btn">
             Login
           </button>
@@ -119,14 +158,15 @@ const StudentLoginForm = () => {
             <span>or</span>
           </div>
 
-          <button
-            type="button"
-            className="google-btn"
-            onClick={handleGoogleLogin}
-          >
-            <FaGoogle className="google-icon" />
-            <span>Login with Google</span>
-          </button>
+          {/* ✅ Google Login Button */}
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={handleGoogleError}
+            />
+          </div>
+
+          {/* OPTIONAL: You can keep your styled button and trigger GoogleLogin */}
         </form>
       </div>
     </div>
